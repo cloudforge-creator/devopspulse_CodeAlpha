@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${appName} + ' | Dashboard'">DevOpsPulse Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" th:href="@{/}">
+            <span class="logo-dot"></span>
+            <span th:text="${appName}">DevOpsPulse</span>
+        </a>
+        <ul class="nav-links">
+            <li><a th:href="@{/}">Home</a></li>
+            <li><a class="active" th:href="@{/dashboard}">Dashboard</a></li>
+            <li><a th:href="@{/about}">About</a></li>
+            <li><a th:href="@{/api/status}">/api/status</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1 style="font-size: 1.9rem; font-weight: 800;">SRE Control Panel</h1>
+        <p style="color: var(--text-secondary); margin-top: 0.4rem;">
+            Live operational status for
+            <strong th:text="${appName}">DevOpsPulse</strong>
+            running in
+            <strong th:text="${environment}">Production</strong>
+        </p>
+
+        <span class="badge" th:classappend="${healthy} ? 'badge-up' : 'badge-down'" style="margin-top: 1rem;">
+            <span class="badge-dot"></span>
+            <span th:text="${healthy} ? 'HEALTHY' : 'UNHEALTHY'">HEALTHY</span>
+        </span>
+
+        <h2 class="section-title">Health &amp; Build Metrics</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Build Status</h3>
+                <div class="value" th:text="${buildStatus}">PASSING</div>
+            </div>
+            <div class="card">
+                <h3>Uptime</h3>
+                <div class="value" th:text="${uptime}">00:00:00</div>
+            </div>
+            <div class="card">
+                <h3>Started At</h3>
+                <div class="value" style="font-size: 1rem;" th:text="${startedAt}">2026-01-01T00:00:00Z</div>
+            </div>
+            <div class="card">
+                <h3>Java Version</h3>
+                <div class="value" style="font-size: 1.2rem;" th:text="${javaVersion}">21</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Runtime Resources</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Available Processors</h3>
+                <div class="value" th:text="${availableProcessors}">4</div>
+            </div>
+            <div class="card">
+                <h3>Free Memory</h3>
+                <div class="value" th:text="${freeMemoryMb} + ' MB'">128 MB</div>
+            </div>
+            <div class="card">
+                <h3>Total Memory</h3>
+                <div class="value" th:text="${totalMemoryMb} + ' MB'">256 MB</div>
+            </div>
+            <div class="card">
+                <h3>Max Memory</h3>
+                <div class="value" th:text="${maxMemoryMb} + ' MB'">512 MB</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">CI/CD Pipeline Flow</h2>
+        <div class="pipeline-flow">
+            <div class="pipeline-step">GitHub</div>
+            <div class="pipeline-arrow">&#8594;</div>
+            <div class="pipeline-step">Gradle Build</div>
+            <div class="pipeline-arrow">&#8594;</div>
+            <div class="pipeline-step">Unit Tests</div>
+            <div class="pipeline-arrow">&#8594;</div>
+            <div class="pipeline-step">Docker Build</div>
+            <div class="pipeline-arrow">&#8594;</div>
+            <div class="pipeline-step">Azure Container Registry</div>
+            <div class="pipeline-arrow">&#8594;</div>
+            <div class="pipeline-step">Azure App Service</div>
+            <div class="pipeline-arrow">&#8594;</div>
+            <div class="pipeline-step">Health Verification</div>
+        </div>
+
+        <h2 class="section-title">Environment Details</h2>
+        <table class="status-table">
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Application</td>
+                    <td th:text="${appName}">DevOpsPulse</td>
+                </tr>
+                <tr>
+                    <td>Version</td>
+                    <td th:text="${version}">1.0.0</td>
+                </tr>
+                <tr>
+                    <td>Environment (APP_ENV)</td>
+                    <td th:text="${environment}">Production</td>
+                </tr>
+                <tr>
+                    <td>Container Registry</td>
+                    <td>Azure Container Registry (ACR)</td>
+                </tr>
+                <tr>
+                    <td>Deployment Target</td>
+                    <td>Azure App Service (Web App for Containers)</td>
+                </tr>
+                <tr>
+                    <td>CI Automation</td>
+                    <td>Jenkins Controller-Agent + Azure Pipelines</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p th:text="${appName} + ' v' + ${version} + ' — SRE Dashboard'">DevOpsPulse</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${appName} + ' | Home'">DevOpsPulse</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" th:href="@{/}">
+            <span class="logo-dot"></span>
+            <span th:text="${appName}">DevOpsPulse</span>
+        </a>
+        <ul class="nav-links">
+            <li><a class="active" th:href="@{/}">Home</a></li>
+            <li><a th:href="@{/dashboard}">Dashboard</a></li>
+            <li><a th:href="@{/about}">About</a></li>
+            <li><a th:href="@{/health}">/health</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <section class="hero">
+            <h1 th:text="${appName}">DevOpsPulse</h1>
+            <p class="tagline" th:text="${tagline}">BUILD. DEPLOY. MONITOR.</p>
+            <span class="badge" th:classappend="${healthy} ? 'badge-up' : 'badge-down'">
+                <span class="badge-dot"></span>
+                <span th:text="${healthy} ? 'ALL SYSTEMS OPERATIONAL' : 'SERVICE DEGRADED'">STATUS</span>
+            </span>
+        </section>
+
+        <div class="card-grid">
+            <div class="card">
+                <h3>Version</h3>
+                <div class="value" th:text="${version}">1.0.0</div>
+                <div class="sub">Current release</div>
+            </div>
+            <div class="card">
+                <h3>Environment</h3>
+                <div class="value" th:text="${environment}">Production</div>
+                <div class="sub">APP_ENV</div>
+            </div>
+            <div class="card">
+                <h3>Build Status</h3>
+                <div class="value" th:text="${buildStatus}">PASSING</div>
+                <div class="sub">Latest Gradle build</div>
+            </div>
+            <div class="card">
+                <h3>Deployment Target</h3>
+                <div class="value" style="font-size: 1.1rem;">Azure App Service</div>
+                <div class="sub">Web App for Containers</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">System Overview</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Source Control</h3>
+                <div class="value" style="font-size: 1.1rem;">Git</div>
+                <div class="sub">Version-controlled source</div>
+            </div>
+            <div class="card">
+                <h3>Build Engine</h3>
+                <div class="value" style="font-size: 1.1rem;">Gradle Wrapper</div>
+                <div class="sub">Java 21 toolchain</div>
+            </div>
+            <div class="card">
+                <h3>Containerization</h3>
+                <div class="value" style="font-size: 1.1rem;">Docker (Alpine)</div>
+                <div class="sub">Multi-stage build</div>
+            </div>
+            <div class="card">
+                <h3>Automation</h3>
+                <div class="value" style="font-size: 1.1rem;">Jenkins + Azure Pipelines</div>
+                <div class="sub">Controller-Agent + Cloud CI/CD</div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top: 3rem;">
+            <a class="btn" th:href="@{/dashboard}">View SRE Dashboard</a>
+        </div>
+    </div>
+
+    <footer>
+        <p th:text="${appName} + ' v' + ${version} + ' — Java 21 · Spring Boot 3.2 · Gradle · Docker · Jenkins · Azure'">
+            DevOpsPulse
+        </p>
+    </footer>
+</body>
+</html>

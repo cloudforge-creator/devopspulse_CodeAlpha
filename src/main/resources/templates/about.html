@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${appName} + ' | About'">About DevOpsPulse</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" th:href="@{/}">
+            <span class="logo-dot"></span>
+            <span th:text="${appName}">DevOpsPulse</span>
+        </a>
+        <ul class="nav-links">
+            <li><a th:href="@{/}">Home</a></li>
+            <li><a th:href="@{/dashboard}">Dashboard</a></li>
+            <li><a class="active" th:href="@{/about}">About</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1 style="font-size: 1.9rem; font-weight: 800;">About <span th:text="${appName}">DevOpsPulse</span></h1>
+
+        <div class="prose" style="margin-top: 1rem;">
+            <p>
+                DevOpsPulse is a single, unified Spring Boot application built to demonstrate
+                a complete, production-style DevOps lifecycle end to end: from local development
+                through source control, automated builds, testing, containerization, distributed
+                CI automation, and cloud deployment with continuous health monitoring.
+            </p>
+            <p>
+                Rather than treating infrastructure as an afterthought, DevOpsPulse is intentionally
+                weighted toward the operational tooling that keeps a real service running in
+                production &mdash; roughly 80% infrastructure and DevOps engineering, 20% user-facing UI.
+            </p>
+        </div>
+
+        <h2 class="section-title">Project Objectives</h2>
+        <div class="prose">
+            <p>
+                Provide a working reference implementation of a Java Spring Boot service that
+                can be built with Gradle, verified with JUnit 5, packaged into a minimal Alpine-based
+                Docker image, orchestrated through a Jenkins Controller-Agent pipeline, and promoted
+                through Azure Pipelines into Azure Container Registry and Azure App Service, with
+                health verification enforced at every stage.
+            </p>
+        </div>
+
+        <h2 class="section-title">Technology Stack</h2>
+        <div class="tech-list">
+            <div class="tech-item">
+                <div class="tech-label">Language</div>
+                <div class="tech-value">Java 21</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Framework</div>
+                <div class="tech-value">Spring Boot 3.2.x</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">View Engine</div>
+                <div class="tech-value">Thymeleaf</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Monitoring</div>
+                <div class="tech-value">Spring Actuator</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Build Tool</div>
+                <div class="tech-value">Gradle (Wrapper)</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Testing</div>
+                <div class="tech-value">JUnit 5 + MockMvc</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Containerization</div>
+                <div class="tech-value">Docker (multi-stage, Alpine)</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">CI Automation</div>
+                <div class="tech-value">Jenkins Controller-Agent</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Cloud CI/CD</div>
+                <div class="tech-value">Azure Pipelines</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Registry</div>
+                <div class="tech-value">Azure Container Registry</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-label">Hosting</div>
+                <div class="tech-value">Azure App Service</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Architecture</h2>
+        <div class="prose">
+            <p>
+                The application follows a conventional layered Spring MVC architecture: web and
+                REST controllers delegate to a service layer that computes runtime and build
+                metadata, which is rendered either as JSON (for automation and health checks)
+                or as server-side Thymeleaf HTML (for the human-facing dashboard). The same
+                artifact serves both purposes so that what operators see on the dashboard is
+                always backed by the same data automated pipelines rely on for verification.
+            </p>
+        </div>
+
+        <h2 class="section-title">Task Breakdown</h2>
+        <table class="status-table">
+            <thead>
+                <tr><th>Stage</th><th>Tool / Technology</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Development</td><td>Java 21, Spring Boot, Thymeleaf</td></tr>
+                <tr><td>Source Control</td><td>Git</td></tr>
+                <tr><td>Build</td><td>Gradle Wrapper</td></tr>
+                <tr><td>Testing</td><td>JUnit 5, MockMvc</td></tr>
+                <tr><td>Containerization</td><td>Docker (multi-stage Alpine)</td></tr>
+                <tr><td>Distributed Automation</td><td>Jenkins Controller-Agent</td></tr>
+                <tr><td>Cloud CI/CD</td><td>Azure Pipelines</td></tr>
+                <tr><td>Registry</td><td>Azure Container Registry</td></tr>
+                <tr><td>Hosting</td><td>Azure App Service</td></tr>
+                <tr><td>Monitoring</td><td>Spring Actuator, /health, /api/status</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p th:text="${appName} + ' v' + ${version} + ' — About'">DevOpsPulse</p>
+    </footer>
+</body>
+</html>

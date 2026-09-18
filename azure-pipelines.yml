@@ -1,0 +1,155 @@
+# =========================================================================
+# DevOpsPulse - Azure Pipelines CI/CD
+# Build & Test -> Build/Push Image via ACR Tasks (az acr build, cloud-side,
+# no local Docker daemon required) -> Deploy to Azure App Service
+# (Web App for Containers) -> Post-Deployment Health Verification
+# =========================================================================
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr: none
+
+variables:
+  # -- Azure Container Registry --
+  # 'az acr build' compiles the image inside ACR's own build service, so no
+  # Docker daemon needs to be present on the pipeline agent at all.
+  acrName: 'devopspulseacr'                                 # ACR resource name (no domain suffix)
+  acrRegistry: 'devopspulseacr.azurecr.io'                  # ACR login server
+  imageRepository: 'devopspulse'
+  tag: '$(Build.BuildId)'
+
+  # -- Azure Service Connection --
+  # A single ARM (Azure Resource Manager) service connection with rights to
+  # both the ACR instance and the target App Service. Used by every
+  # AzureCLI@2 / Azure*@ task in this pipeline.
+  azureServiceConnection: 'devopspulse-azure-connection'
+
+  # -- Azure App Service --
+  appServiceName: 'devopspulse-app'
+  appServiceUrl: 'https://devopspulse-app.azurewebsites.net'
+
+  # -- Build --
+  gradleWrapper: '$(Build.SourcesDirectory)/gradlew'
+  vmImageName: 'ubuntu-latest'
+
+stages:
+
+  # -----------------------------------------------------------------------
+  # Stage 1: Build & Unit Test
+  # -----------------------------------------------------------------------
+  - stage: BuildAndTest
+    displayName: 'Build & Unit Test'
+    jobs:
+      - job: GradleBuild
+        displayName: 'Gradle Build & JUnit 5 Tests'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - script: chmod +x $(gradleWrapper)
+            displayName: 'Make gradlew executable'
+
+          - script: $(gradleWrapper) clean test bootJar --no-daemon
+            displayName: 'Run Gradle clean test bootJar'
+
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/build/test-results/test/*.xml'
+              failTaskOnFailedTests: true
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.SourcesDirectory)/build/libs'
+              ArtifactName: 'devopspulse-jar'
+              publishLocation: 'Container'
+
+  # -----------------------------------------------------------------------
+  # Stage 2: Build and Push Image via ACR Tasks (cloud-side build)
+  # -----------------------------------------------------------------------
+  - stage: BuildAndPushImage
+    displayName: 'Build and Push Image (az acr build)'
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    jobs:
+      - job: AcrBuild
+        displayName: 'az acr build'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Build and push image in ACR (no local Docker daemon needed)'
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                set -e
+                echo "Building $(imageRepository):$(tag) in ACR '$(acrName)'..."
+                az acr build \
+                  --registry $(acrName) \
+                  --image $(imageRepository):$(tag) \
+                  --image $(imageRepository):latest \
+                  --file Dockerfile \
+                  .
+
+  # -----------------------------------------------------------------------
+  # Stage 3: Deploy to Azure App Service (Web App for Containers)
+  # -----------------------------------------------------------------------
+  - stage: DeployToAppService
+    displayName: 'Deploy to Azure App Service'
+    dependsOn: BuildAndPushImage
+    condition: succeeded()
+    jobs:
+      - deployment: DeployWebApp
+        displayName: 'Deploy Container to App Service'
+        pool:
+          vmImage: $(vmImageName)
+        environment: 'devopspulse-production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  displayName: 'Deploy to Azure App Service (Container)'
+                  inputs:
+                    azureSubscription: $(azureServiceConnection)
+                    appName: $(appServiceName)
+                    containers: '$(acrRegistry)/$(imageRepository):$(tag)'
+
+  # -----------------------------------------------------------------------
+  # Stage 4: Post-Deployment Health Verification
+  # -----------------------------------------------------------------------
+  - stage: HealthVerification
+    displayName: 'Post-Deployment Health Verification'
+    dependsOn: DeployToAppService
+    condition: succeeded()
+    jobs:
+      - job: VerifyHealth
+        displayName: 'Verify /health endpoint'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - script: |
+              echo "Waiting for App Service to warm up..."
+              sleep 30
+
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $(appServiceUrl)/health)
+              echo "Received HTTP status: $HTTP_STATUS"
+
+              if [ "$HTTP_STATUS" -ne 200 ]; then
+                echo "Health verification FAILED. Expected HTTP 200, got $HTTP_STATUS."
+                exit 1
+              fi
+
+              echo "Health verification PASSED. DevOpsPulse is live at $(appServiceUrl)"
+            displayName: 'Curl /health on deployed App Service'
