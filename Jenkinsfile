@@ -1,12 +1,6 @@
-// =========================================================================
-// DevOpsPulse - Jenkins Declarative Pipeline
-// Runs on a distributed Jenkins Controller-Agent architecture over
-// Jenkins Remoting. This pipeline never executes on the controller itself;
-// every stage is constrained to an agent labeled 'linux-docker'.
-// =========================================================================
 pipeline {
 
-```
+
 agent any
 
 options {
@@ -110,7 +104,9 @@ stages {
                 }
 
                 if (!healthy) {
+
                     echo 'Container logs:'
+
                     bat 'docker logs %CONTAINER_NAME%'
 
                     error(
@@ -143,6 +139,7 @@ post {
         bat 'docker rmi %IMAGE_NAME%:%IMAGE_TAG% 2>nul || exit /b 0'
     }
 }
-```
+
 
 }
+
